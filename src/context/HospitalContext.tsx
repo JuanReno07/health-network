@@ -218,8 +218,22 @@ export const HospitalProvider: React.FC<{ children: React.ReactNode }> = ({ chil
   };
 
   const deleteDoctor = (id: string) => {
+    const docToDelete = doctors.find(d => d.id === id);
     StorageService.deleteDoctor(id, currentUser || undefined);
     setDoctors(prev => prev.filter(d => d.id !== id));
+
+    // Cascade delete matching user login account
+    const matchingUser = users.find(u =>
+      (u.doctorId && u.doctorId === id) ||
+      (docToDelete && u.name.toLowerCase() === docToDelete.name.toLowerCase()) ||
+      (docToDelete && docToDelete.badgeNumber && u.badgeNumber === docToDelete.badgeNumber)
+    );
+
+    if (matchingUser) {
+      StorageService.deleteUser(matchingUser.id, currentUser || undefined);
+      setUsers(prev => prev.filter(u => u.id !== matchingUser.id));
+    }
+
     refreshData();
   };
 
@@ -296,8 +310,24 @@ export const HospitalProvider: React.FC<{ children: React.ReactNode }> = ({ chil
   };
 
   const deleteUser = (id: string) => {
+    const userToDelete = users.find(u => u.id === id);
     StorageService.deleteUser(id, currentUser || undefined);
     setUsers(prev => prev.filter(u => u.id !== id));
+
+    // Cascade delete matching doctor profile if user was a doctor
+    if (userToDelete && userToDelete.role === 'DOCTOR') {
+      const matchingDoctor = doctors.find(d =>
+        (userToDelete.doctorId && d.id === userToDelete.doctorId) ||
+        d.name.toLowerCase() === userToDelete.name.toLowerCase() ||
+        (userToDelete.badgeNumber && d.badgeNumber === userToDelete.badgeNumber)
+      );
+
+      if (matchingDoctor) {
+        StorageService.deleteDoctor(matchingDoctor.id, currentUser || undefined);
+        setDoctors(prev => prev.filter(d => d.id !== matchingDoctor.id));
+      }
+    }
+
     refreshData();
   };
 
