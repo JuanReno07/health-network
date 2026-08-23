@@ -203,6 +203,7 @@ export const HospitalProvider: React.FC<{ children: React.ReactNode }> = ({ chil
 
   const deleteService = (id: string) => {
     StorageService.deleteService(id, currentUser || undefined);
+    setServices(prev => prev.filter(s => s.id !== id));
     refreshData();
   };
 
@@ -218,6 +219,7 @@ export const HospitalProvider: React.FC<{ children: React.ReactNode }> = ({ chil
 
   const deleteDoctor = (id: string) => {
     StorageService.deleteDoctor(id, currentUser || undefined);
+    setDoctors(prev => prev.filter(d => d.id !== id));
     refreshData();
   };
 
@@ -245,6 +247,7 @@ export const HospitalProvider: React.FC<{ children: React.ReactNode }> = ({ chil
 
   const deleteGalleryItem = (id: string) => {
     StorageService.deleteGalleryItem(id, currentUser || undefined);
+    setGallery(prev => prev.filter(g => g.id !== id));
     refreshData();
   };
 
@@ -255,6 +258,7 @@ export const HospitalProvider: React.FC<{ children: React.ReactNode }> = ({ chil
 
   const deleteVideo = (id: string) => {
     StorageService.deleteVideo(id, currentUser || undefined);
+    setVideos(prev => prev.filter(v => v.id !== id));
     refreshData();
   };
 
@@ -265,6 +269,7 @@ export const HospitalProvider: React.FC<{ children: React.ReactNode }> = ({ chil
 
   const deleteRecruitmentPosition = (id: string) => {
     StorageService.deleteRecruitmentPosition(id, currentUser || undefined);
+    setRecruitment(prev => prev.filter(r => r.id !== id));
     refreshData();
   };
 
@@ -281,6 +286,7 @@ export const HospitalProvider: React.FC<{ children: React.ReactNode }> = ({ chil
 
   const deleteAnnouncement = (id: string) => {
     StorageService.deleteAnnouncement(id, currentUser || undefined);
+    setAnnouncements(prev => prev.filter(a => a.id !== id));
     refreshData();
   };
 
@@ -291,6 +297,7 @@ export const HospitalProvider: React.FC<{ children: React.ReactNode }> = ({ chil
 
   const deleteUser = (id: string) => {
     StorageService.deleteUser(id, currentUser || undefined);
+    setUsers(prev => prev.filter(u => u.id !== id));
     refreshData();
   };
 

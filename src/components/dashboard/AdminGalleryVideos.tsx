@@ -186,10 +186,15 @@ export const AdminGalleryVideos: React.FC = () => {
                     <Edit2 className="w-3.5 h-3.5" />
                   </button>
                   <button
-                    onClick={() => {
-                      if (window.confirm('Hapus foto ini?')) deleteGalleryItem(photo.id);
+                    type="button"
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      if (window.confirm('Yakin ingin menghapus foto ini?')) {
+                        deleteGalleryItem(photo.id);
+                      }
                     }}
-                    className="p-1.5 rounded-lg bg-rose-50 dark:bg-rose-950/40 hover:bg-rose-100 text-rose-600 dark:text-rose-400"
+                    className="p-1.5 rounded-lg bg-rose-50 dark:bg-rose-950/40 hover:bg-rose-100 text-rose-600 dark:text-rose-400 transition-colors"
+                    title="Hapus Foto"
                   >
                     <Trash2 className="w-3.5 h-3.5" />
                   </button>
@@ -236,19 +241,26 @@ export const AdminGalleryVideos: React.FC = () => {
                 </span>
                 <div className="flex items-center gap-1.5">
                   <button
+                    type="button"
                     onClick={() => {
                       setEditingVideo(vid);
                       setIsNewVideo(false);
                     }}
-                    className="p-1.5 rounded-lg bg-slate-100 dark:bg-slate-800 hover:bg-medical-50 hover:text-medical-600 text-slate-600 dark:text-slate-300"
+                    className="p-1.5 rounded-lg bg-slate-100 dark:bg-slate-800 hover:bg-medical-50 hover:text-medical-600 text-slate-600 dark:text-slate-300 transition-colors"
+                    title="Edit Video"
                   >
                     <Edit2 className="w-3.5 h-3.5" />
                   </button>
                   <button
-                    onClick={() => {
-                      if (window.confirm('Hapus video ini?')) deleteVideo(vid.id);
+                    type="button"
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      if (window.confirm('Yakin ingin menghapus video ini?')) {
+                        deleteVideo(vid.id);
+                      }
                     }}
-                    className="p-1.5 rounded-lg bg-rose-50 dark:bg-rose-950/40 hover:bg-rose-100 text-rose-600 dark:text-rose-400"
+                    className="p-1.5 rounded-lg bg-rose-50 dark:bg-rose-950/40 hover:bg-rose-100 text-rose-600 dark:text-rose-400 transition-colors"
+                    title="Hapus Video"
                   >
                     <Trash2 className="w-3.5 h-3.5" />
                   </button>
