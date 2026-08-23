@@ -124,11 +124,9 @@ export const AdminUserManagement: React.FC = () => {
       return;
     }
 
-    if (window.confirm(`Yakin ingin menghapus akun "${user.name}" (${user.role})?`)) {
-      deleteUser(user.id);
-      if (user.role === 'DOCTOR' && user.doctorId) {
-        deleteDoctor(user.doctorId);
-      }
+    deleteUser(user.id);
+    if (user.role === 'DOCTOR' && user.doctorId) {
+      deleteDoctor(user.doctorId);
     }
   };
 

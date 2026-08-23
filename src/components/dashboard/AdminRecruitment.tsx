@@ -60,9 +60,7 @@ export const AdminRecruitment: React.FC = () => {
   };
 
   const handleDelete = (id: string) => {
-    if (window.confirm('Hapus lowongan rekrutmen ini?')) {
-      deleteRecruitmentPosition(id);
-    }
+    deleteRecruitmentPosition(id);
   };
 
   const handleToggleStatus = (pos: RecruitmentPosition) => {

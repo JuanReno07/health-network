@@ -189,11 +189,9 @@ export const AdminGalleryVideos: React.FC = () => {
                     type="button"
                     onClick={(e) => {
                       e.stopPropagation();
-                      if (window.confirm('Yakin ingin menghapus foto ini?')) {
-                        deleteGalleryItem(photo.id);
-                      }
+                      deleteGalleryItem(photo.id);
                     }}
-                    className="p-1.5 rounded-lg bg-rose-50 dark:bg-rose-950/40 hover:bg-rose-100 text-rose-600 dark:text-rose-400 transition-colors"
+                    className="p-1.5 rounded-lg bg-rose-50 dark:bg-rose-950/40 hover:bg-rose-100 text-rose-600 dark:text-rose-400 transition-all hover:scale-105 active:scale-95"
                     title="Hapus Foto"
                   >
                     <Trash2 className="w-3.5 h-3.5" />
@@ -255,11 +253,9 @@ export const AdminGalleryVideos: React.FC = () => {
                     type="button"
                     onClick={(e) => {
                       e.stopPropagation();
-                      if (window.confirm('Yakin ingin menghapus video ini?')) {
-                        deleteVideo(vid.id);
-                      }
+                      deleteVideo(vid.id);
                     }}
-                    className="p-1.5 rounded-lg bg-rose-50 dark:bg-rose-950/40 hover:bg-rose-100 text-rose-600 dark:text-rose-400 transition-colors"
+                    className="p-1.5 rounded-lg bg-rose-50 dark:bg-rose-950/40 hover:bg-rose-100 text-rose-600 dark:text-rose-400 transition-all hover:scale-105 active:scale-95"
                     title="Hapus Video"
                   >
                     <Trash2 className="w-3.5 h-3.5" />

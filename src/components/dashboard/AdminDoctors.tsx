@@ -101,9 +101,7 @@ export const AdminDoctors: React.FC = () => {
   };
 
   const handleDelete = (id: string) => {
-    if (window.confirm('Yakin ingin menghapus profil dokter ini?')) {
-      deleteDoctor(id);
-    }
+    deleteDoctor(id);
   };
 
   // Create/update user account from doctor data

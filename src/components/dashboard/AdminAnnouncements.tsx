@@ -54,9 +54,7 @@ export const AdminAnnouncements: React.FC = () => {
   };
 
   const handleDelete = (id: string) => {
-    if (window.confirm('Hapus pengumuman ini?')) {
-      deleteAnnouncement(id);
-    }
+    deleteAnnouncement(id);
   };
 
   const handleTogglePublish = (ann: Announcement) => {

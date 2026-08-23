@@ -55,9 +55,7 @@ export const AdminServices: React.FC = () => {
   };
 
   const handleDelete = (id: string) => {
-    if (window.confirm('Yakin ingin menghapus layanan ini?')) {
-      deleteService(id);
-    }
+    deleteService(id);
   };
 
   const handleToggleStatus = (srv: Service) => {
