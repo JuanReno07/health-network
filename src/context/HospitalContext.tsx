@@ -107,6 +107,15 @@ export const HospitalProvider: React.FC<{ children: React.ReactNode }> = ({ chil
     localStorage.setItem('gta_rs_theme', theme);
   }, [theme]);
 
+  // Initial cloud sync with Supabase
+  useEffect(() => {
+    StorageService.syncWithSupabase().then(success => {
+      if (success) {
+        refreshData();
+      }
+    });
+  }, []);
+
   const toggleTheme = () => {
     setTheme(prev => (prev === 'light' ? 'dark' : 'light'));
   };
