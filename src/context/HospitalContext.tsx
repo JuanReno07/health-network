@@ -107,13 +107,33 @@ export const HospitalProvider: React.FC<{ children: React.ReactNode }> = ({ chil
     localStorage.setItem('gta_rs_theme', theme);
   }, [theme]);
 
-  // Initial cloud sync with Supabase
+  // Initial cloud sync with Supabase and Realtime subscription
   useEffect(() => {
+    // 1. Initial Sync
     StorageService.syncWithSupabase().then(success => {
       if (success) {
         refreshData();
       }
     });
+
+    // 2. Realtime Channel Listener
+    const unsubscribe = StorageService.subscribeToCloudChanges(() => {
+      refreshData();
+    });
+
+    // 3. Periodic Background Auto-Sync (every 6 seconds fallback)
+    const intervalId = setInterval(() => {
+      StorageService.syncWithSupabase().then(success => {
+        if (success) {
+          refreshData();
+        }
+      });
+    }, 6000);
+
+    return () => {
+      unsubscribe();
+      clearInterval(intervalId);
+    };
   }, []);
 
   const toggleTheme = () => {

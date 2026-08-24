@@ -90,7 +90,23 @@ export const StorageService = {
     if (!isSupabaseConfigured() || !supabase) return false;
 
     try {
-      // Sync Doctors
+      // 1. Sync Services (Layanan Medis)
+      const { data: remoteServices } = await supabase.from('services').select('*');
+      if (remoteServices && remoteServices.length > 0) {
+        save(KEYS.SERVICES, remoteServices.map(s => ({
+          id: s.id,
+          hospitalId: s.hospital_id,
+          title: s.title,
+          category: s.category,
+          description: s.description,
+          icon: s.icon,
+          status: s.status,
+          features: s.features || [],
+          operatingHours: s.operating_hours || ''
+        })));
+      }
+
+      // 2. Sync Doctors
       const { data: remoteDoctors } = await supabase.from('doctors').select('*');
       if (remoteDoctors && remoteDoctors.length > 0) {
         save(KEYS.DOCTORS, remoteDoctors.map(d => ({
@@ -102,7 +118,7 @@ export const StorageService = {
         })));
       }
 
-      // Sync Appointments
+      // 3. Sync Appointments
       const { data: remoteAppointments } = await supabase.from('appointments').select('*');
       if (remoteAppointments && remoteAppointments.length > 0) {
         save(KEYS.APPOINTMENTS, remoteAppointments.map(a => ({
@@ -120,7 +136,7 @@ export const StorageService = {
         })));
       }
 
-      // Sync Users
+      // 4. Sync Users
       const { data: remoteUsers } = await supabase.from('users').select('*');
       if (remoteUsers && remoteUsers.length > 0) {
         save(KEYS.USERS, remoteUsers.map(u => ({
@@ -131,7 +147,7 @@ export const StorageService = {
         })));
       }
 
-      // Sync Announcements
+      // 5. Sync Announcements
       const { data: remoteAnnouncements } = await supabase.from('announcements').select('*');
       if (remoteAnnouncements && remoteAnnouncements.length > 0) {
         save(KEYS.ANNOUNCEMENTS, remoteAnnouncements.map(a => ({
@@ -140,10 +156,132 @@ export const StorageService = {
         })));
       }
 
+      // 6. Sync Gallery
+      const { data: remoteGallery } = await supabase.from('gallery').select('*');
+      if (remoteGallery && remoteGallery.length > 0) {
+        save(KEYS.GALLERY, remoteGallery.map(g => ({
+          id: g.id,
+          hospitalId: g.hospital_id,
+          title: g.title,
+          category: g.category,
+          imageUrl: g.image_url,
+          description: g.description,
+          date: g.date
+        })));
+      }
+
+      // 7. Sync Videos
+      const { data: remoteVideos } = await supabase.from('videos').select('*');
+      if (remoteVideos && remoteVideos.length > 0) {
+        save(KEYS.VIDEOS, remoteVideos.map(v => ({
+          id: v.id,
+          hospitalId: v.hospital_id,
+          title: v.title,
+          type: v.type,
+          url: v.url,
+          thumbnailUrl: v.thumbnail_url,
+          duration: v.duration,
+          description: v.description
+        })));
+      }
+
+      // 8. Sync Recruitment Positions
+      const { data: remotePositions } = await supabase.from('recruitment_positions').select('*');
+      if (remotePositions && remotePositions.length > 0) {
+        save(KEYS.RECRUITMENT, remotePositions.map(p => ({
+          id: p.id,
+          hospitalId: p.hospital_id,
+          position: p.position,
+          department: p.department,
+          description: p.description,
+          requirements: p.requirements || [],
+          salaryInfo: p.salary_info || '',
+          type: p.type,
+          status: p.status,
+          openDate: p.open_date
+        })));
+      }
+
+      // 9. Sync Recruitment Applications
+      const { data: remoteApps } = await supabase.from('recruitment_applications').select('*');
+      if (remoteApps && remoteApps.length > 0) {
+        save(KEYS.APPLICATIONS, remoteApps.map(a => ({
+          id: a.id,
+          positionId: a.position_id,
+          positionTitle: a.position_title,
+          hospitalId: a.hospital_id,
+          applicantName: a.applicant_name,
+          applicantPhone: a.applicant_phone,
+          applicantDiscord: a.applicant_discord,
+          experience: a.experience,
+          motivation: a.motivation,
+          status: a.status,
+          submittedAt: a.submitted_at
+        })));
+      }
+
+      // 10. Sync Patient Records
+      const { data: remoteRecords } = await supabase.from('patient_records').select('*');
+      if (remoteRecords && remoteRecords.length > 0) {
+        save(KEYS.PATIENT_RECORDS, remoteRecords.map(r => ({
+          id: r.id,
+          appointmentId: r.appointment_id,
+          patientName: r.patient_name,
+          patientPhone: r.patient_phone,
+          hospitalId: r.hospital_id,
+          doctorId: r.doctor_id,
+          doctorName: r.doctor_name,
+          injuryType: r.injury_type,
+          diagnosis: r.diagnosis,
+          treatment: r.treatment,
+          prescriptions: r.prescriptions || [],
+          surgicalProcedure: r.surgical_procedure,
+          doctorNotes: r.doctor_notes,
+          date: r.date
+        })));
+      }
+
+      // 11. Sync Hospitals Status & Emergency Mode
+      const { data: remoteHospitals } = await supabase.from('hospitals').select('*');
+      if (remoteHospitals && remoteHospitals.length > 0) {
+        const current = StorageService.getHospitals();
+        for (const rh of remoteHospitals) {
+          if (current[rh.id]) {
+            if (typeof rh.emergency_mode === 'boolean') current[rh.id].emergencyMode = rh.emergency_mode;
+            if (rh.emergency_message) current[rh.id].emergencyMessage = rh.emergency_message;
+            if (rh.status) current[rh.id].status = rh.status;
+          }
+        }
+        save(KEYS.HOSPITALS, current);
+      }
+
       return true;
     } catch (e) {
       console.warn('Supabase sync background notice:', e);
       return false;
+    }
+  },
+
+  // Realtime multi-browser cloud subscription
+  subscribeToCloudChanges: (onChange: () => void): (() => void) => {
+    if (!isSupabaseConfigured() || !supabase) return () => {};
+    try {
+      const channel = supabase
+        .channel('public:db-live-sync')
+        .on('postgres_changes', { event: '*', schema: 'public' }, async () => {
+          await StorageService.syncWithSupabase();
+          onChange();
+        })
+        .subscribe();
+
+      return () => {
+        if (supabase) {
+          supabase.removeChannel(channel);
+        }
+      };
+    } catch (e) {
+      console.warn('Supabase realtime subscription notice:', e);
+      return () => {};
     }
   },
 
