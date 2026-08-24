@@ -203,6 +203,7 @@ export const HospitalProvider: React.FC<{ children: React.ReactNode }> = ({ chil
   // Actions
   const updateHospital = (hospital: Hospital) => {
     StorageService.updateHospital(hospital, currentUser || undefined);
+    setHospitals(prev => ({ ...prev, [hospital.id]: hospital }));
     refreshData();
   };
 

@@ -253,15 +253,22 @@ export const StorageService = {
         })));
       }
 
-      // 11. Sync Hospitals Status & Emergency Mode
+      // 11. Sync Hospitals Status & Emergency Mode & Profile Info
       const { data: remoteHospitals } = await supabase.from('hospitals').select('*');
       if (remoteHospitals && remoteHospitals.length > 0) {
         const current = StorageService.getHospitals();
         for (const rh of remoteHospitals) {
           if (current[rh.id]) {
+            if (rh.name) current[rh.id].name = rh.name;
+            if (rh.short_name) current[rh.id].shortName = rh.short_name;
+            if (rh.tagline) current[rh.id].tagline = rh.tagline;
+            if (rh.description) current[rh.id].description = rh.description;
             if (typeof rh.emergency_mode === 'boolean') current[rh.id].emergencyMode = rh.emergency_mode;
             if (rh.emergency_message) current[rh.id].emergencyMessage = rh.emergency_message;
             if (rh.status) current[rh.id].status = rh.status;
+            if (rh.address && current[rh.id].location) current[rh.id].location.address = rh.address;
+            if (rh.hotline && current[rh.id].contact) current[rh.id].contact.emergencyPhone = rh.hotline;
+            if (rh.dispatch_code && current[rh.id].contact) current[rh.id].contact.radioFrequency = rh.dispatch_code;
           }
         }
         save(KEYS.HOSPITALS, current);

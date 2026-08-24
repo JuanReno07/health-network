@@ -19,10 +19,10 @@ export const AdminHospitalInfo: React.FC = () => {
   const [formData, setFormData] = useState<Hospital>({ ...activeHospital });
   const [savedSuccess, setSavedSuccess] = useState(false);
 
-  // Sync state if activeHospital changes
+  // Sync state ONLY when switching to a different hospital ID
   React.useEffect(() => {
     setFormData({ ...activeHospital });
-  }, [activeHospital]);
+  }, [activeHospital.id]);
 
   const handleSave = (e: React.FormEvent) => {
     e.preventDefault();
