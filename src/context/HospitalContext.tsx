@@ -79,7 +79,9 @@ export const HospitalProvider: React.FC<{ children: React.ReactNode }> = ({ chil
   });
 
   const [currentUser, setCurrentUser] = useState<User | null>(() => {
-    const saved = localStorage.getItem('gta_rs_current_user');
+    // Clean legacy localStorage to prevent session sticking
+    localStorage.removeItem('gta_rs_current_user');
+    const saved = sessionStorage.getItem('gta_rs_current_user');
     return saved ? JSON.parse(saved) : null;
   });
 
@@ -96,6 +98,31 @@ export const HospitalProvider: React.FC<{ children: React.ReactNode }> = ({ chil
   const [announcements, setAnnouncements] = useState<Announcement[]>(StorageService.getAnnouncements());
   const [auditLogs, setAuditLogs] = useState<AuditLog[]>(StorageService.getAuditLogs());
   const [users, setUsers] = useState<User[]>(StorageService.getUsers());
+
+  // Inactivity Auto-Logout Timeout (30 minutes of idle time)
+  useEffect(() => {
+    if (!currentUser) return;
+
+    const INACTIVITY_LIMIT_MS = 30 * 60 * 1000; // 30 Minutes
+    let timeoutId: any;
+
+    const resetTimer = () => {
+      clearTimeout(timeoutId);
+      timeoutId = setTimeout(() => {
+        logout();
+      }, INACTIVITY_LIMIT_MS);
+    };
+
+    const activityEvents = ['mousemove', 'mousedown', 'keydown', 'touchstart', 'scroll'];
+    activityEvents.forEach(evt => window.addEventListener(evt, resetTimer, { passive: true }));
+
+    resetTimer(); // initialize timer on mount
+
+    return () => {
+      clearTimeout(timeoutId);
+      activityEvents.forEach(evt => window.removeEventListener(evt, resetTimer));
+    };
+  }, [currentUser]);
 
   // Apply dark mode class to html element
   useEffect(() => {
@@ -192,11 +219,13 @@ export const HospitalProvider: React.FC<{ children: React.ReactNode }> = ({ chil
       };
     }
     setCurrentUser(user);
-    localStorage.setItem('gta_rs_current_user', JSON.stringify(user));
+    sessionStorage.setItem('gta_rs_current_user', JSON.stringify(user));
+    localStorage.removeItem('gta_rs_current_user');
   };
 
   const logout = () => {
     setCurrentUser(null);
+    sessionStorage.removeItem('gta_rs_current_user');
     localStorage.removeItem('gta_rs_current_user');
   };
 
