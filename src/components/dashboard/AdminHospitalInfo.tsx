@@ -168,6 +168,34 @@ export const AdminHospitalInfo: React.FC = () => {
 
               <div className="sm:col-span-2">
                 <label className="block font-semibold text-slate-700 dark:text-slate-300 mb-1">
+                  URL / Link Foto Profil Direktur
+                </label>
+                <div className="flex items-center gap-4">
+                  <img
+                    src={formData.director.photo || 'https://images.unsplash.com/photo-1622253692010-333f2da6031d?auto=format&fit=crop&w=600&q=80'}
+                    alt="Preview Direktur"
+                    className="w-14 h-14 rounded-2xl object-cover border-2 border-medical-500 shadow-sm flex-shrink-0 bg-slate-100 dark:bg-slate-800"
+                    onError={(e) => {
+                      (e.target as HTMLImageElement).src = 'https://images.unsplash.com/photo-1622253692010-333f2da6031d?auto=format&fit=crop&w=600&q=80';
+                    }}
+                  />
+                  <input
+                    type="url"
+                    value={formData.director.photo || ''}
+                    onChange={e =>
+                      setFormData({
+                        ...formData,
+                        director: { ...formData.director, photo: e.target.value }
+                      })
+                    }
+                    placeholder="https://images.unsplash.com/... atau link foto dokter"
+                    className="w-full px-3.5 py-2.5 rounded-xl border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-navy-950 text-slate-900 dark:text-white text-xs focus:ring-2 focus:ring-medical-500 focus:outline-none"
+                  />
+                </div>
+              </div>
+
+              <div className="sm:col-span-2">
+                <label className="block font-semibold text-slate-700 dark:text-slate-300 mb-1">
                   Pesan / Sambutan Direktur
                 </label>
                 <textarea

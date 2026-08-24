@@ -99,9 +99,12 @@ export const AboutSection: React.FC = () => {
               <div className="glass-card rounded-3xl p-6 shadow-xl border border-slate-200 dark:border-slate-800 relative overflow-hidden">
                 <div className="flex items-center gap-4 mb-4">
                   <img
-                    src={activeHospital.director.photo}
-                    alt={activeHospital.director.name}
-                    className="w-16 h-16 rounded-2xl object-cover border-2 border-medical-500 shadow-md"
+                    src={activeHospital.director?.photo || (activeHospital.id === 'revenhill' ? 'https://images.unsplash.com/photo-1622253692010-333f2da6031d?auto=format&fit=crop&w=600&q=80' : 'https://images.unsplash.com/photo-1537368910025-700350fe46c7?auto=format&fit=crop&w=600&q=80')}
+                    alt={activeHospital.director?.name}
+                    className="w-16 h-16 rounded-2xl object-cover border-2 border-medical-500 shadow-md bg-slate-100 dark:bg-slate-800"
+                    onError={(e) => {
+                      (e.target as HTMLImageElement).src = activeHospital.id === 'revenhill' ? 'https://images.unsplash.com/photo-1622253692010-333f2da6031d?auto=format&fit=crop&w=600&q=80' : 'https://images.unsplash.com/photo-1537368910025-700350fe46c7?auto=format&fit=crop&w=600&q=80';
+                    }}
                   />
                   <div>
                     <span className="text-[10px] font-bold text-medical-600 dark:text-medical-400 uppercase tracking-wider block">
