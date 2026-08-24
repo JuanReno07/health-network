@@ -1,9 +1,11 @@
+import { isSafeUrl, sanitizeText } from './security';
+
 /**
- * Utility to extract YouTube video ID and generate embed URL & thumbnail
+ * Utility to safely extract YouTube video ID and generate embed URL & thumbnail
  */
 export function extractYouTubeId(url: string): string | null {
-  if (!url) return null;
-  const trimmed = url.trim();
+  if (!url || typeof url !== 'string') return null;
+  const trimmed = sanitizeText(url.trim());
 
   // Check if string is already just an 11-character video ID
   if (/^[a-zA-Z0-9_-]{11}$/.test(trimmed)) {
@@ -24,12 +26,13 @@ export function extractYouTubeId(url: string): string | null {
 }
 
 export function formatYouTubeEmbedUrl(url: string, autoPlay: boolean = true): string {
-  if (!url) return '';
+  if (!url || typeof url !== 'string') return '';
   const videoId = extractYouTubeId(url);
   if (videoId) {
     return `https://www.youtube.com/embed/${videoId}${autoPlay ? '?autoplay=1&rel=0' : '?rel=0'}`;
   }
-  return url.trim();
+  const clean = sanitizeText(url.trim());
+  return isSafeUrl(clean) ? clean : '';
 }
 
 export function getYouTubeThumbnailUrl(url: string): string | null {

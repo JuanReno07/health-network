@@ -1,6 +1,7 @@
 /**
  * Defensive Security Utilities
- * - Anti-XSS String Sanitizer
+ * - Anti-XSS String & HTML Sanitizer
+ * - Safe URL Protocol Validator (Blocks javascript:, data:, blob:, file:)
  * - Anti-Brute Force Login Protector
  * - Form Submission Rate Limiter & Spam Filter
  */
@@ -14,14 +15,55 @@ export function sanitizeText(input: string): string {
   return input
     // Remove script tags and their content
     .replace(/<script\b[^<]*(?:(?!<\/script>)<[^<]*)*<\/script>/gi, '')
-    // Remove inline event handlers (e.g., onerror=, onclick=, onload=)
+    // Remove inline event handlers (e.g., onerror=, onclick=, onload=, onmouseover=)
     .replace(/\bon\w+\s*=\s*(['"]).*?\1/gi, '')
     .replace(/\bon\w+\s*=\s*[^>\s]+/gi, '')
     // Remove javascript: pseudo-protocol
     .replace(/javascript\s*:/gi, '')
+    // Remove vbscript: pseudo-protocol
+    .replace(/vbscript\s*:/gi, '')
+    // Remove data: text/html protocols
+    .replace(/data\s*:\s*text\/html/gi, '')
     // Remove HTML tags while preserving inner text
     .replace(/<\/?[^>]+(>|$)/g, '')
     .trim();
+}
+
+/**
+ * Validates whether a URL strictly uses safe web protocols (https://, http://, or local relative path).
+ * Disallows javascript:, data:, blob:, file: schemes to prevent XSS and SSRF vectors.
+ */
+export function isSafeUrl(url: string): boolean {
+  if (!url || typeof url !== 'string') return false;
+  const trimmed = url.trim().toLowerCase();
+
+  // Allow relative asset paths starting with /
+  if (trimmed.startsWith('/') && !trimmed.startsWith('//')) {
+    return true;
+  }
+
+  // Reject dangerous protocols
+  const dangerousSchemes = ['javascript:', 'data:', 'vbscript:', 'file:', 'blob:'];
+  for (const scheme of dangerousSchemes) {
+    if (trimmed.startsWith(scheme)) return false;
+  }
+
+  // Must strictly start with http:// or https://
+  try {
+    const parsed = new URL(url.trim());
+    return parsed.protocol === 'http:' || parsed.protocol === 'https:';
+  } catch {
+    return false;
+  }
+}
+
+/**
+ * Sanitizes and validates a URL, returning a safe fallback if the URL is malicious or malformed.
+ */
+export function sanitizeUrl(url: string, fallback: string = ''): string {
+  if (!url || typeof url !== 'string') return fallback;
+  const clean = sanitizeText(url.trim());
+  return isSafeUrl(clean) ? clean : fallback;
 }
 
 /**

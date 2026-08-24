@@ -26,8 +26,9 @@ import {
   INITIAL_AUDIT_LOGS,
   INITIAL_USERS
 } from '../data/mockData';
-import { formatYouTubeEmbedUrl } from '../utils/youtube';
+import { formatYouTubeEmbedUrl, getYouTubeThumbnailUrl } from '../utils/youtube';
 import { supabase, isSupabaseConfigured } from './supabaseClient';
+import { sanitizeText, sanitizeUrl, isSafeUrl } from '../utils/security';
 
 const KEYS = {
   HOSPITALS: 'gta_rs_hospitals',
@@ -245,25 +246,33 @@ export const StorageService = {
   },
 
   saveService: (service: Service, user?: User): void => {
+    const cleanService: Service = {
+      ...service,
+      title: sanitizeText(service.title),
+      description: sanitizeText(service.description),
+      features: (service.features || []).map(f => sanitizeText(f)),
+      operatingHours: sanitizeText(service.operatingHours || '')
+    };
+
     const services = StorageService.getServices();
-    const existingIndex = services.findIndex(s => s.id === service.id);
+    const existingIndex = services.findIndex(s => s.id === cleanService.id);
     if (existingIndex >= 0) {
-      services[existingIndex] = service;
+      services[existingIndex] = cleanService;
     } else {
-      services.push(service);
+      services.push(cleanService);
     }
     save(KEYS.SERVICES, services);
 
     cloudUpsert('services', {
-      id: service.id,
-      hospital_id: service.hospitalId,
-      title: service.title,
-      category: service.category,
-      description: service.description,
-      icon: service.icon,
-      status: service.status,
-      features: service.features,
-      operating_hours: service.operatingHours
+      id: cleanService.id,
+      hospital_id: cleanService.hospitalId,
+      title: cleanService.title,
+      category: cleanService.category,
+      description: cleanService.description,
+      icon: cleanService.icon,
+      status: cleanService.status,
+      features: cleanService.features,
+      operating_hours: cleanService.operatingHours
     });
 
     StorageService.addAuditLog({
@@ -271,7 +280,7 @@ export const StorageService = {
       userName: user?.name || 'Administrator',
       userRole: user?.role || 'ADMIN',
       action: existingIndex >= 0 ? 'SERVICE_UPDATED' : 'SERVICE_CREATED',
-      target: service.title,
+      target: cleanService.title,
       timestamp: new Date().toLocaleString('id-ID')
     });
   },
@@ -301,33 +310,48 @@ export const StorageService = {
   },
 
   saveDoctor: (doctor: Doctor, user?: User): void => {
+    const cleanDoctor: Doctor = {
+      ...doctor,
+      name: sanitizeText(doctor.name),
+      title: sanitizeText(doctor.title),
+      specialization: sanitizeText(doctor.specialization),
+      department: sanitizeText(doctor.department),
+      photo: sanitizeUrl(doctor.photo, 'https://images.unsplash.com/photo-1622253692010-333f2da6031d?auto=format&fit=crop&w=600&q=80'),
+      bio: sanitizeText(doctor.bio),
+      schedule: sanitizeText(doctor.schedule),
+      experience: sanitizeText(doctor.experience),
+      badgeNumber: sanitizeText(doctor.badgeNumber || ''),
+      phone: sanitizeText(doctor.phone || ''),
+      email: sanitizeText(doctor.email || '')
+    };
+
     const doctors = StorageService.getDoctors();
-    const existingIndex = doctors.findIndex(d => d.id === doctor.id);
+    const existingIndex = doctors.findIndex(d => d.id === cleanDoctor.id);
     if (existingIndex >= 0) {
-      doctors[existingIndex] = doctor;
+      doctors[existingIndex] = cleanDoctor;
     } else {
-      doctors.push(doctor);
+      doctors.push(cleanDoctor);
     }
     save(KEYS.DOCTORS, doctors);
 
     cloudUpsert('doctors', {
-      id: doctor.id,
-      hospital_id: doctor.hospitalId,
-      name: doctor.name,
-      title: doctor.title,
-      specialization: doctor.specialization,
-      department: doctor.department,
-      photo: doctor.photo,
-      bio: doctor.bio,
-      schedule: doctor.schedule,
-      available_days: doctor.availableDays,
-      available_time_slots: doctor.availableTimeSlots,
-      experience: doctor.experience,
-      availability: doctor.availability,
-      status: doctor.status,
-      badge_number: doctor.badgeNumber,
-      phone: doctor.phone,
-      email: doctor.email
+      id: cleanDoctor.id,
+      hospital_id: cleanDoctor.hospitalId,
+      name: cleanDoctor.name,
+      title: cleanDoctor.title,
+      specialization: cleanDoctor.specialization,
+      department: cleanDoctor.department,
+      photo: cleanDoctor.photo,
+      bio: cleanDoctor.bio,
+      schedule: cleanDoctor.schedule,
+      available_days: cleanDoctor.availableDays,
+      available_time_slots: cleanDoctor.availableTimeSlots,
+      experience: cleanDoctor.experience,
+      availability: cleanDoctor.availability,
+      status: cleanDoctor.status,
+      badge_number: cleanDoctor.badgeNumber,
+      phone: cleanDoctor.phone,
+      email: cleanDoctor.email
     });
 
     StorageService.addAuditLog({
@@ -335,7 +359,7 @@ export const StorageService = {
       userName: user?.name || 'Administrator',
       userRole: user?.role || 'ADMIN',
       action: existingIndex >= 0 ? 'DOCTOR_UPDATED' : 'DOCTOR_ADDED',
-      target: doctor.name,
+      target: cleanDoctor.name,
       timestamp: new Date().toLocaleString('id-ID')
     });
   },
@@ -508,23 +532,32 @@ export const StorageService = {
   },
 
   saveGalleryItem: (item: GalleryItem, user?: User): void => {
+    const cleanItem: GalleryItem = {
+      ...item,
+      title: sanitizeText(item.title),
+      category: item.category,
+      imageUrl: sanitizeUrl(item.imageUrl, 'https://images.unsplash.com/photo-1586773860418-d37222d8fce3?auto=format&fit=crop&w=1200&q=80'),
+      description: sanitizeText(item.description),
+      date: sanitizeText(item.date)
+    };
+
     const gallery = StorageService.getGallery();
-    const existingIndex = gallery.findIndex(g => g.id === item.id);
+    const existingIndex = gallery.findIndex(g => g.id === cleanItem.id);
     if (existingIndex >= 0) {
-      gallery[existingIndex] = item;
+      gallery[existingIndex] = cleanItem;
     } else {
-      gallery.unshift(item);
+      gallery.unshift(cleanItem);
     }
     save(KEYS.GALLERY, gallery);
 
-    cloudUpsert('gallery', item);
+    cloudUpsert('gallery', cleanItem);
 
     StorageService.addAuditLog({
       userId: user?.id || 'admin',
       userName: user?.name || 'Administrator',
       userRole: user?.role || 'ADMIN',
       action: existingIndex >= 0 ? 'GALLERY_IMAGE_UPDATED' : 'GALLERY_IMAGE_ADDED',
-      target: item.title,
+      target: cleanItem.title,
       timestamp: new Date().toLocaleString('id-ID')
     });
   },
@@ -558,28 +591,33 @@ export const StorageService = {
   },
 
   saveVideo: (video: VideoItem, user?: User): void => {
-    const videos = StorageService.getVideos();
-    const sanitizedVideo: VideoItem = {
+    const cleanVideo: VideoItem = {
       ...video,
-      url: formatYouTubeEmbedUrl(video.url)
+      title: sanitizeText(video.title),
+      type: video.type,
+      url: formatYouTubeEmbedUrl(video.url, false),
+      thumbnailUrl: sanitizeUrl(video.thumbnailUrl || '', getYouTubeThumbnailUrl(video.url) || ''),
+      duration: sanitizeText(video.duration),
+      description: sanitizeText(video.description)
     };
 
-    const existingIndex = videos.findIndex(v => v.id === sanitizedVideo.id);
+    const videos = StorageService.getVideos();
+    const existingIndex = videos.findIndex(v => v.id === cleanVideo.id);
     if (existingIndex >= 0) {
-      videos[existingIndex] = sanitizedVideo;
+      videos[existingIndex] = cleanVideo;
     } else {
-      videos.unshift(sanitizedVideo);
+      videos.unshift(cleanVideo);
     }
     save(KEYS.VIDEOS, videos);
 
-    cloudUpsert('videos', sanitizedVideo);
+    cloudUpsert('videos', cleanVideo);
 
     StorageService.addAuditLog({
       userId: user?.id || 'admin',
       userName: user?.name || 'Administrator',
       userRole: user?.role || 'ADMIN',
       action: existingIndex >= 0 ? 'VIDEO_UPDATED' : 'VIDEO_ADDED',
-      target: sanitizedVideo.title,
+      target: cleanVideo.title,
       timestamp: new Date().toLocaleString('id-ID')
     });
   },
@@ -609,26 +647,36 @@ export const StorageService = {
   },
 
   saveRecruitmentPosition: (pos: RecruitmentPosition, user?: User): void => {
+    const cleanPos: RecruitmentPosition = {
+      ...pos,
+      position: sanitizeText(pos.position),
+      department: sanitizeText(pos.department),
+      description: sanitizeText(pos.description),
+      requirements: (pos.requirements || []).map(r => sanitizeText(r)),
+      salaryInfo: sanitizeText(pos.salaryInfo || ''),
+      type: pos.type
+    };
+
     const positions = StorageService.getRecruitment();
-    const existingIndex = positions.findIndex(p => p.id === pos.id);
+    const existingIndex = positions.findIndex(p => p.id === cleanPos.id);
     if (existingIndex >= 0) {
-      positions[existingIndex] = pos;
+      positions[existingIndex] = cleanPos;
     } else {
-      positions.unshift(pos);
+      positions.unshift(cleanPos);
     }
     save(KEYS.RECRUITMENT, positions);
 
     cloudUpsert('recruitment_positions', {
-      id: pos.id,
-      hospital_id: pos.hospitalId,
-      position: pos.position,
-      department: pos.department,
-      description: pos.description,
-      requirements: pos.requirements,
-      salary_info: pos.salaryInfo,
-      type: pos.type,
-      status: pos.status,
-      open_date: pos.openDate
+      id: cleanPos.id,
+      hospital_id: cleanPos.hospitalId,
+      position: cleanPos.position,
+      department: cleanPos.department,
+      description: cleanPos.description,
+      requirements: cleanPos.requirements,
+      salary_info: cleanPos.salaryInfo,
+      type: cleanPos.type,
+      status: cleanPos.status,
+      open_date: cleanPos.openDate
     });
 
     StorageService.addAuditLog({
@@ -636,7 +684,7 @@ export const StorageService = {
       userName: user?.name || 'Administrator',
       userRole: user?.role || 'ADMIN',
       action: existingIndex >= 0 ? 'RECRUITMENT_POSITION_UPDATED' : 'RECRUITMENT_POSITION_CREATED',
-      target: pos.position,
+      target: cleanPos.position,
       timestamp: new Date().toLocaleString('id-ID')
     });
   },
@@ -670,6 +718,11 @@ export const StorageService = {
     const newApp: RecruitmentApplication = {
       ...app,
       id,
+      applicantName: sanitizeText(app.applicantName),
+      applicantPhone: sanitizeText(app.applicantPhone),
+      applicantDiscord: sanitizeText(app.applicantDiscord || ''),
+      experience: sanitizeText(app.experience),
+      motivation: sanitizeText(app.motivation),
       status: 'Submitted',
       submittedAt: new Date().toLocaleString('id-ID')
     };
@@ -691,10 +744,10 @@ export const StorageService = {
 
     StorageService.addAuditLog({
       userId: 'applicant',
-      userName: app.applicantName,
+      userName: newApp.applicantName,
       userRole: 'ADMIN',
       action: 'RECRUITMENT_APPLICATION_SUBMITTED',
-      target: `${app.positionTitle} (${app.applicantName})`,
+      target: `${newApp.positionTitle} (${newApp.applicantName})`,
       timestamp: new Date().toLocaleString('id-ID')
     });
 
@@ -707,25 +760,33 @@ export const StorageService = {
   },
 
   saveAnnouncement: (announcement: Announcement, user?: User): void => {
+    const cleanAnnouncement: Announcement = {
+      ...announcement,
+      title: sanitizeText(announcement.title),
+      content: sanitizeText(announcement.content),
+      category: announcement.category,
+      author: sanitizeText(announcement.author || '')
+    };
+
     const announcements = StorageService.getAnnouncements();
-    const existingIndex = announcements.findIndex(a => a.id === announcement.id);
+    const existingIndex = announcements.findIndex(a => a.id === cleanAnnouncement.id);
     if (existingIndex >= 0) {
-      announcements[existingIndex] = announcement;
+      announcements[existingIndex] = cleanAnnouncement;
     } else {
-      announcements.unshift(announcement);
+      announcements.unshift(cleanAnnouncement);
     }
     save(KEYS.ANNOUNCEMENTS, announcements);
 
     cloudUpsert('announcements', {
-      id: announcement.id,
-      hospital_id: announcement.hospitalId,
-      title: announcement.title,
-      content: announcement.content,
-      category: announcement.category,
-      priority: announcement.priority,
-      date: announcement.date,
-      published: announcement.published,
-      author: announcement.author
+      id: cleanAnnouncement.id,
+      hospital_id: cleanAnnouncement.hospitalId,
+      title: cleanAnnouncement.title,
+      content: cleanAnnouncement.content,
+      category: cleanAnnouncement.category,
+      priority: cleanAnnouncement.priority,
+      date: cleanAnnouncement.date,
+      published: cleanAnnouncement.published,
+      author: cleanAnnouncement.author
     });
 
     StorageService.addAuditLog({
@@ -733,7 +794,7 @@ export const StorageService = {
       userName: user?.name || 'Administrator',
       userRole: user?.role || 'ADMIN',
       action: existingIndex >= 0 ? 'ANNOUNCEMENT_UPDATED' : 'ANNOUNCEMENT_CREATED',
-      target: announcement.title,
+      target: cleanAnnouncement.title,
       timestamp: new Date().toLocaleString('id-ID')
     });
   },
@@ -790,25 +851,33 @@ export const StorageService = {
   },
 
   saveUser: (user: User, adminUser?: User): void => {
+    const cleanUser: User = {
+      ...user,
+      name: sanitizeText(user.name),
+      email: sanitizeText(user.email).toLowerCase(),
+      badgeNumber: sanitizeText(user.badgeNumber || ''),
+      avatar: sanitizeUrl(user.avatar || '', 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&w=200&q=80')
+    };
+
     const users = StorageService.getUsers();
-    const existingIndex = users.findIndex(u => u.id === user.id);
+    const existingIndex = users.findIndex(u => u.id === cleanUser.id);
     if (existingIndex >= 0) {
-      users[existingIndex] = user;
+      users[existingIndex] = cleanUser;
     } else {
-      users.push(user);
+      users.push(cleanUser);
     }
     save(KEYS.USERS, users);
 
     cloudUpsert('users', {
-      id: user.id,
-      name: user.name,
-      email: user.email,
-      password: user.password || '123',
-      role: user.role,
-      hospital_id: user.hospitalId,
-      doctor_id: user.doctorId,
-      badge_number: user.badgeNumber,
-      avatar: user.avatar
+      id: cleanUser.id,
+      name: cleanUser.name,
+      email: cleanUser.email,
+      password: cleanUser.password || '123',
+      role: cleanUser.role,
+      hospital_id: cleanUser.hospitalId,
+      doctor_id: cleanUser.doctorId,
+      badge_number: cleanUser.badgeNumber,
+      avatar: cleanUser.avatar
     });
 
     StorageService.addAuditLog({
@@ -816,7 +885,7 @@ export const StorageService = {
       userName: adminUser?.name || 'Administrator',
       userRole: 'ADMIN',
       action: existingIndex >= 0 ? 'USER_ACCOUNT_UPDATED' : 'USER_ACCOUNT_CREATED',
-      target: `${user.name} (${user.role})`,
+      target: `${cleanUser.name} (${cleanUser.role})`,
       timestamp: new Date().toLocaleString('id-ID')
     });
   },
