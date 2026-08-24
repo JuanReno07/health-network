@@ -255,12 +255,13 @@ export const RecruitmentSection: React.FC = () => {
                       </label>
                       <div className="relative">
                         <input
-                          type="text"
+                          type="tel"
+                          inputMode="numeric"
                           required
                           value={applicantPhone}
-                          onChange={e => setApplicantPhone(e.target.value)}
+                          onChange={e => setApplicantPhone(e.target.value.replace(/[^0-9+-]/g, ''))}
                           placeholder="555-0199"
-                          className="w-full pl-10 pr-3 py-2.5 rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-navy-950 text-slate-900 dark:text-white text-xs focus:ring-2 focus:ring-healthemerald-500 focus:outline-none"
+                          className="w-full pl-10 pr-3 py-2.5 rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-navy-950 text-slate-900 dark:text-white text-xs focus:ring-2 focus:ring-healthemerald-500 focus:outline-none font-mono"
                         />
                         <Phone className="w-4 h-4 text-slate-400 absolute left-3 top-3" />
                       </div>

@@ -311,11 +311,13 @@ export const AppointmentBookingSection: React.FC<AppointmentBookingSectionProps>
                   </label>
                   <div className="relative">
                     <input
-                      type="text"
+                      type="tel"
+                      inputMode="numeric"
+                      required
                       value={patientPhone}
-                      onChange={e => setPatientPhone(e.target.value)}
+                      onChange={e => setPatientPhone(e.target.value.replace(/[^0-9+-]/g, ''))}
                       placeholder="contoh: 555-0142"
-                      className="w-full pl-10 pr-4 py-2.5 rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-navy-900 text-slate-900 dark:text-white text-xs font-medium focus:ring-2 focus:ring-medical-500 focus:outline-none"
+                      className="w-full pl-10 pr-4 py-2.5 rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-navy-900 text-slate-900 dark:text-white text-xs font-medium focus:ring-2 focus:ring-medical-500 focus:outline-none font-mono"
                     />
                     <Phone className="w-4 h-4 text-slate-400 absolute left-3 top-3" />
                   </div>

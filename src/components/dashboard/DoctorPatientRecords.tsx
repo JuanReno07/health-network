@@ -307,11 +307,12 @@ export const DoctorPatientRecords: React.FC<DoctorPatientRecordsProps> = ({
                     No. Telepon Pasien
                   </label>
                   <input
-                    type="text"
+                    type="tel"
+                    inputMode="numeric"
                     value={patientPhone}
-                    onChange={e => setPatientPhone(e.target.value)}
+                    onChange={e => setPatientPhone(e.target.value.replace(/[^0-9+-]/g, ''))}
                     placeholder="555-0191"
-                    className="w-full px-3.5 py-2.5 rounded-xl border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-navy-950 text-slate-900 dark:text-white focus:ring-2 focus:ring-medical-500 focus:outline-none"
+                    className="w-full px-3.5 py-2.5 rounded-xl border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-navy-950 text-slate-900 dark:text-white focus:ring-2 focus:ring-medical-500 focus:outline-none font-mono"
                   />
                 </div>
               </div>
