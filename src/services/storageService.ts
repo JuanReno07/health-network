@@ -75,6 +75,18 @@ async function cloudUpsert(table: string, data: any) {
   }
 }
 
+async function cloudUpdate(table: string, id: string, data: any) {
+  if (!isSupabaseConfigured() || !supabase) return;
+  try {
+    const { error } = await supabase.from(table).update(data).eq('id', id);
+    if (error) {
+      console.warn(`Supabase update in ${table} notice:`, error);
+    }
+  } catch (err) {
+    console.warn(`Supabase update in ${table} notice:`, err);
+  }
+}
+
 async function cloudDelete(table: string, id: string) {
   if (!isSupabaseConfigured() || !supabase) return;
   try {
@@ -338,8 +350,7 @@ export const StorageService = {
       hospitals[hospitalId].emergencyMessage = message;
       save(KEYS.HOSPITALS, hospitals);
 
-      cloudUpsert('hospitals', {
-        id: hospitalId,
+      cloudUpdate('hospitals', hospitalId, {
         emergency_mode: enabled,
         emergency_message: message
       });
@@ -362,8 +373,7 @@ export const StorageService = {
       hospitals[hospitalId].status = status;
       save(KEYS.HOSPITALS, hospitals);
 
-      cloudUpsert('hospitals', {
-        id: hospitalId,
+      cloudUpdate('hospitals', hospitalId, {
         status: status
       });
 
@@ -509,8 +519,7 @@ export const StorageService = {
       target.availability = availability;
       save(KEYS.DOCTORS, doctors);
 
-      cloudUpsert('doctors', {
-        id: doctorId,
+      cloudUpdate('doctors', doctorId, {
         availability: availability
       });
 
@@ -603,10 +612,9 @@ export const StorageService = {
       target.updatedAt = new Date().toISOString();
       save(KEYS.APPOINTMENTS, appointments);
 
-      cloudUpsert('appointments', {
-        id: id,
+      cloudUpdate('appointments', id, {
         status: status,
-        doctor_notes: target.doctorNotes,
+        doctor_notes: target.doctorNotes || '',
         updated_at: target.updatedAt
       });
 

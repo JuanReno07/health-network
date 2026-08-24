@@ -265,6 +265,18 @@ export const HospitalProvider: React.FC<{ children: React.ReactNode }> = ({ chil
 
   const updateAppointmentStatus = (id: string, status: Appointment['status'], doctorNotes?: string) => {
     StorageService.updateAppointmentStatus(id, status, doctorNotes, currentUser || undefined);
+    setAppointments(prev =>
+      prev.map(a =>
+        a.id === id
+          ? {
+              ...a,
+              status,
+              doctorNotes: doctorNotes !== undefined ? doctorNotes : a.doctorNotes,
+              updatedAt: new Date().toISOString()
+            }
+          : a
+      )
+    );
     refreshData();
   };
 
